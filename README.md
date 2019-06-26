@@ -36,6 +36,10 @@ handler = tt.TennisDataHandler("../data/", "rg17", include_qualifiers=True)
 print(handler.summary())
 handler.export_relevance_labels(YOUR_OUTPUT_DIR, binary=True)
 ```
+OR change the last line of the code if you only want to export relevant nodes for each day:
+```python
+handler.export_relevance_labels(YOUR_OUTPUT_DIR, binary=True, only_pos_label=True)
+```
 
 ## Details
 
