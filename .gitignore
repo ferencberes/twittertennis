@@ -1,0 +1,4 @@
+data/*
+.datawand
+*.pyc
+*.ipynb_checkpoints/
