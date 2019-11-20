@@ -74,3 +74,17 @@ pages="32",
 issn="2364-8228",
 }
 ```
+```
+@Article{Béres2019,
+author="B{\'e}res, Ferenc
+and Kelen, Domokos M.
+and P{\'a}lovics, R{\'o}bert
+and Bencz{\'u}r, Andr{\'a}s A.",
+title="Node embeddings in dynamic graphs",
+journal="Applied Network Science",
+year="2019",
+volume="4",
+number="1",
+pages="64",
+}
+```
