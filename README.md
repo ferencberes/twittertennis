@@ -48,16 +48,6 @@ See more detailed examples and some description about the data in this [notebook
 # References
 
 We used RG17 and UO17 Twitter tennis data sets in some of our previous work. You can find the BibTex reference format of our papers below:
-```
-@conference{beres18_oline_n2v,
-  author       = {Ferenc Béres, Róbert Pálovics, Domokos M. Kelen, Dávid Szabó and András A. Benczúr}, 
-  title        = {Node Embeddings in Dynamic Graphs},
-  booktitle    = {Book of Abstracts of the 7th International Conference on Complex Networks and Their Applications},
-  pages        = {178--180},
-  year         = {2018},
-  isbn         = {978-2-9557050-2-5},
-}
-```
 
 ```
 @article{Beres2018,
