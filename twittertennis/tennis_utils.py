@@ -1,5 +1,7 @@
 import pandas as pd
 import datetime
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 ### Utils ###
 
@@ -82,9 +84,6 @@ def get_daily_label_dicts(label_value_dict, collected_dates, mentions_df, mapper
     return daily_label_dicts
 
 ### Visualization ###
-
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 def visu_players(handler, figsize=(15,10)):
     df = handler.daily_p_df

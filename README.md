@@ -43,7 +43,7 @@ handler.export_relevance_labels(YOUR_OUTPUT_DIR, binary=True, only_pos_label=Tru
 
 ## Details
 
-See more detailed examples and some description about the data in this [notebook](./examples/Examples.ipynb)
+See more detailed examples and some description about the data in this [notebook](./examples/FirstLook.ipynb)
 
 # References
 

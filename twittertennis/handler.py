@@ -134,7 +134,7 @@ class TennisDataHandler():
             "data_id":self.data_id,
             "include_qualifiers": self.include_qualifiers,
             "dates": self.dates,
-            "dates with no game": self.dates_with_no_games,
+            "dates_with_no_game": self.dates_with_no_games,
             "start_time": self.start_time,
             "end_time": self.end_time,
             "number_of_edges": self.number_of_edges,

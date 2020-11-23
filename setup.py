@@ -10,6 +10,11 @@ setup(name='twittertennis',
       install_requires=[
           'pandas',
           'datetime',
-          'pytz'
+          'pytz',
+          'matplotlib',
+          'seaborn',
+          'pytest',
+          'codecov',
+          'pytest-cov',
       ],
 zip_safe=False)
