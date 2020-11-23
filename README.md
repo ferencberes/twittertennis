@@ -1,6 +1,10 @@
 ﻿twittertennis
 ==============
 
+[![Build Status](https://travis-ci.org/ferencberes/twittertennis.svg?branch=master)](https://travis-ci.org/ferencberes/twittertennis)
+[![codecov](https://codecov.io/gh/ferencberes/twittertennis/branch/master/graph/badge.svg?token=O3SJ5GEHFV)](https://codecov.io/gh/ferencberes/twittertennis)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ferencberes/twittertennis/ce8e0230220596e4b33632cf6ab05e49f6059b0f)
+
 Utility python package for RG17 and UO17 Twitter tennis tournament data sets.
 
 # Introduction
