@@ -46,10 +46,9 @@ class TennisDataHandler():
             print("Data was DOWNLOADED!")
         self.include_qualifiers = include_qualifiers
         self._load_files(self.data_id, self.data_dir)
-        self._extract_mappings()
         self._filter_data()
+        self._extract_mappings()
         self.daily_p_dict, self.daily_p_df = extract_daily_players(self.schedule, self.player_accounts)
-        #print(len(self.account_to_id))
         
     def _load_files(self, data_id, data_dir):
         mention_file_path = "%s/%s_mentions_with_names.csv" % (data_dir, data_id)
@@ -106,6 +105,7 @@ class TennisDataHandler():
         targets = list(zip(mentions["trg_screen_str"], mentions["trg"]))
         sources = list(zip(mentions["src_screen_str"], mentions["src"]))
         self.account_to_id = dict(sources+targets)
+        #print(len(self.account_to_id))
         self.id_to_account = dict(zip(self.account_to_id.values(), self.account_to_id.keys()))
         nodes = list(self.account_to_id.values())
         # tennis account to player
@@ -163,7 +163,7 @@ class TennisDataHandler():
         """Show daily information about tennis players"""
         return self.daily_p_df[self.daily_p_df["date"].isin(self.dates)]
     
-    def _get_daily_relevance_labels(self, binary=True):
+    def get_daily_relevance_labels(self, binary=True):
         if binary:
             label_value_dict = {"current":1.0, "previous":0.0, "next":0.0}
         else:
@@ -177,7 +177,7 @@ class TennisDataHandler():
     
     def export_relevance_labels(self, output_dir, binary=True, only_pos_label=False):
         """Export label files for each date. Use 'only_pos_label=True' if you want to export only the relevant nodes per day."""
-        daily_label_dicts = self._get_daily_relevance_labels(binary)
+        daily_label_dicts = self.get_daily_relevance_labels(binary)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
             print("%s folder was created." % output_dir)
