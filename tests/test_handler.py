@@ -1,13 +1,14 @@
-import twittertennis.handler as tt
-import os
+import os, sys
 
 delim = os.path.sep
 fp = os.path.realpath(__file__)
 fdir = delim.join(fp.split(delim)[:-1])
 data_dir = os.path.join(fdir, "..", "data")
 
+from twittertennis.handler import TennisDataHandler
+
 def test_load_rg17_with_qualifiers():
-    handler = tt.TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
+    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
     summary = handler.summary()
     assert summary["data_id"] == "rg17"
     assert len(summary) == 8
@@ -20,7 +21,7 @@ def test_load_rg17_with_qualifiers():
     assert summary["number_of_edges"] == 336234
     
 def test_load_rg17_without_qualifiers():
-    handler = tt.TennisDataHandler(data_dir, "rg17", include_qualifiers=False)
+    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=False)
     summary = handler.summary()
     assert len(summary["dates"]) == 15
     assert summary["start_time"] == 1495922400
@@ -28,7 +29,7 @@ def test_load_rg17_without_qualifiers():
     assert summary["number_of_edges"] == 311562
     
 def test_load_uo17_with_qualifiers():
-    handler = tt.TennisDataHandler(data_dir, "uo17", include_qualifiers=True)
+    handler = TennisDataHandler(data_dir, "uo17", include_qualifiers=True)
     summary = handler.summary()
     assert summary["data_id"] == "uo17"
     assert len(summary["dates"]) == 20
@@ -40,7 +41,7 @@ def test_load_uo17_with_qualifiers():
     assert summary["number_of_edges"] == 475085
     
 def test_load_uo17_without_qualifiers():
-    handler = tt.TennisDataHandler(data_dir, "uo17", include_qualifiers=False)
+    handler = TennisDataHandler(data_dir, "uo17", include_qualifiers=False)
     summary = handler.summary()
     assert len(summary["dates"]) == 14
     assert summary["start_time"] == 1503892800
