@@ -68,19 +68,22 @@ def set_label_value(label_value_dict, user, date_idx, collected_dates, screen_na
                 label = label_value_dict["next"]
     return label
 
-def get_daily_label_dicts(label_value_dict, collected_dates, mentions_df, mapper_dicts):
+def get_daily_label_dicts(label_value_dict, collected_dates, mentions_df, mapper_dicts, verbose=False):
     """Label users in mention data based on schedule."""
     screen_name_to_player, user_dict, daily_found_player_dict = mapper_dicts
-    print(len(screen_name_to_player), len(user_dict), len(daily_found_player_dict), len(mentions_df))
+    if verbose:
+        print(len(screen_name_to_player), len(user_dict), len(daily_found_player_dict), len(mentions_df))
     daily_label_dicts = {}
-    print("Labeling users STARTED")
+    if verbose:
+        print("Labeling users STARTED")
     for date_idx, date in enumerate(collected_dates):
         label_dict = {}
         for user in user_dict:
             user_id = user_dict[user]
             label_dict[user_id] = set_label_value(label_value_dict, user, date_idx, collected_dates, screen_name_to_player, daily_found_player_dict)
         daily_label_dicts[date] = label_dict
-    print("Labeling users FINISHED")
+    if verbose:
+        print("Labeling users FINISHED")
     return daily_label_dicts
 
 ### Visualization ###

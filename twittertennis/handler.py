@@ -70,7 +70,8 @@ class TennisDataHandler():
             if self.verbose:
                 print("\n### Load player accounts ###")
                 print("Rafael Nadal accounts:", self.player_accounts["Rafael Nadal"])
-        print("Done")
+        if self.verbose:
+            print("Done")
         
     def _filter_data(self):
         if self.include_qualifiers:
@@ -172,7 +173,7 @@ class TennisDataHandler():
         for d in self.dates_with_no_games:
             daily_found_player_dict[d] = []
         mapper_dicts = (self.tennis_account_to_player, self.account_to_id, daily_found_player_dict)
-        daily_label_dicts = get_daily_label_dicts(label_value_dict, self.dates, self.mentions, mapper_dicts)
+        daily_label_dicts = get_daily_label_dicts(label_value_dict, self.dates, self.mentions, mapper_dicts, self.verbose)
         return daily_label_dicts
     
     def export_relevance_labels(self, output_dir, binary=True, only_pos_label=False):
