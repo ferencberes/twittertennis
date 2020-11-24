@@ -6,7 +6,8 @@ python:
   - "3.7"
 # command to install dependencies
 install:
-  - pip install .
+  - pip install .[test]
+  - python setup.py install
 # command to run tests
 script:
   - pytest --cov=./
