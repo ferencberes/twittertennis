@@ -10,7 +10,6 @@ install:
   - python setup.py install
 # command to run tests
 script:
-  - pytest --cov=./
+  - python setup.py test
 after_success:
   - codecov
-  - bash <(curl -s https://codecov.io/bash)
