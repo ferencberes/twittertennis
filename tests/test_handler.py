@@ -9,7 +9,7 @@ data_dir = os.path.join(fdir, "..", "data")
 from twittertennis.handler import TennisDataHandler
 
 def test_dimensions():
-    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
+    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True, verbose=True)
     num_days = len(handler.dates)
     assert handler.weighted_edges.shape[1] == 4
     assert len(handler.weighted_edges_grouped) == num_days
@@ -99,3 +99,17 @@ def test_label_export():
     assert len(df1) == 78094
     assert len(df2) == 18
     
+def test_get_data_1():
+    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
+    data = handler.get_data(edge_type="temporal", binary_label=True, include_no_game_days=True)
+    assert len(data) == 22
+    assert max(data['2017-05-24']["y"].values()) == 1
+    assert '2017-05-27' in data
+    assert max(data['2017-05-27']["y"].values()) == 0
+
+def test_get_data_2():
+    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
+    data = handler.get_data(edge_type="temporal", binary_label=False, include_no_game_days=False)
+    assert len(data) == 21
+    assert max(data['2017-05-24']["y"].values()) == 2
+    assert (not '2017-05-27' in data)

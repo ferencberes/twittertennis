@@ -225,3 +225,41 @@ class TennisDataHandler():
         with open("%s/summary.json" % output_dir, 'w') as f:
             json.dump(self.summary(), f, indent="   ", sort_keys=False)
         self.mentions[["epoch","src","trg"]].to_csv("%s/edges.csv" % output_dir, index=False, header=False, sep=sep)
+    
+    def _get_snapshot_edges(self, snapshot_id, edge_type="temporal"):
+        snap_edges = []
+        if edge_type == "temporal":
+            df = self.mentions[self.mentions["date"]==snapshot_id][["src","trg","epoch"]].sort_values("epoch")
+            snap_edges = list(zip(df["src"], df["trg"], df["epoch"]))
+        else:
+            df = self.weighted_edges_grouped[snapshot_id]
+            if edge_type == "weighted":
+                
+                snap_edges = list(zip(df["src"], df["trg"], df["weight"]))
+            else:
+                snap_edges = list(zip(df["src"], df["trg"]))
+        return snap_edges
+    
+    def get_data(self, edge_type="temporal", binary_label=True, include_no_game_days=True):
+        labels = self.get_daily_relevance_labels(binary=binary_label)
+        data = {}
+        idx = 0
+        for date in self.dates:
+            if not include_no_game_days and date in self.dates_with_no_games:
+                continue
+            else:
+                data[date] = {
+                    "index":idx,
+                    "date":date,
+                    "edges": self._get_snapshot_edges(date, edge_type=edge_type),
+                    "y": labels[date],
+                    "X": None
+                }
+                idx += 1
+        data["time_periods"] = len(data)
+        data["node_ids"] = self.account_to_id
+        data["snapshots"] = self.dates
+        return data
+            
+        
+        

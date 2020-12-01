@@ -25,7 +25,7 @@ keywords = [
 ]
 
 setup(name='twittertennis',
-      version='0.1',
+      version='0.1.1',
       description='Utility packages for data Twitter tennis tournaments data.',
       url='https://github.com/ferencberes/twittertennis',
       author='Ferenc Beres',
