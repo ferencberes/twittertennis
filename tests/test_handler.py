@@ -8,6 +8,13 @@ data_dir = os.path.join(fdir, "..", "data")
 
 from twittertennis.handler import TennisDataHandler
 
+def test_dimensions():
+    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
+    num_days = len(handler.dates)
+    assert handler.weighted_edges.shape[1] == 4
+    assert len(handler.weighted_edges_grouped) == num_days
+    assert len(handler.edges_grouped) == num_days
+
 def test_load_rg17_with_qualifiers():
     handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
     summary = handler.summary()

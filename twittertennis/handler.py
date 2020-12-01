@@ -32,6 +32,13 @@ DATES_WITH_NO_GAMES = {
     "uo17": ["2017-08-26","2017-08-27"]
 }
 
+def group_edges(df, key_col="date"):
+    edges_grouped = {}
+    grouped = df.groupby(key_col)
+    for key, group in grouped:
+        edges_grouped[key] = group
+    return edges_grouped
+
 class TennisDataHandler():
     
     def __init__(self, data_dir, data_id, include_qualifiers=True, verbose=False):
@@ -48,6 +55,7 @@ class TennisDataHandler():
         self._load_files(self.data_id, self.data_dir)
         self._filter_data()
         self._extract_mappings()
+        self._prepare_edges()
         self.daily_p_dict, self.daily_p_df = extract_daily_players(self.schedule, self.player_accounts)
         
     def _load_files(self, data_id, data_dir):
@@ -128,6 +136,14 @@ class TennisDataHandler():
             for a_name in account_names:
                 tennis_account_to_player[a_name] = cleaned_p
         self.tennis_account_to_player = tennis_account_to_player
+        
+    def _prepare_edges(self):
+        group_cols = ["src","trg","date"]
+        weighted_edges = self.mentions.groupby(by=group_cols)["epoch"].count().reset_index()
+        weighted_edges.rename({"epoch":"weight"}, axis=1, inplace=True)
+        self.weighted_edges = weighted_edges
+        self.edges_grouped = group_edges(self.mentions[group_cols], key_col="date")
+        self.weighted_edges_grouped = group_edges(self.weighted_edges, key_col="date")
     
     def summary(self):
         """Show the data summary"""
