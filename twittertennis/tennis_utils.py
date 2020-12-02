@@ -92,7 +92,7 @@ def visu_players(handler, figsize=(15,10)):
     df = handler.daily_p_df
     df = df[df["date"].isin(handler.dates)]
     # Initialize the matplotlib figure
-    f, ax = plt.subplots(figsize=figsize)
+    fig, ax = plt.subplots(figsize=figsize)
     sns.set_color_codes("muted")
     sns.barplot(x="num_players", y="date", data=df,
             label="Total number of players", color="b")
@@ -105,13 +105,14 @@ def visu_players(handler, figsize=(15,10)):
     sns.despine(left=True, bottom=True)
     plt.legend(loc='upper right')
     plt.show()
+    return fig
     
 def visu_graph(handler, figsize=(12,8)):
     num_of_mentions = handler.mentions["date"].value_counts()
     num_of_nodes = {}
     for d in handler.dates:
         num_of_nodes[d] = get_num_nodes(handler.mentions, d)
-    visu_mention_count(handler.dates, num_of_mentions, num_of_nodes, figsize)
+    return visu_mention_count(handler.dates, num_of_mentions, num_of_nodes, figsize)
 
 def visu_mention_count(tournament_dates, num_of_mentions, num_of_nodes, figsize=(12,8)):
     x = range(len(tournament_dates))
@@ -119,13 +120,14 @@ def visu_mention_count(tournament_dates, num_of_mentions, num_of_nodes, figsize=
     y_ticks = [10000*i for i in range(1,5)]
     edges = [num_of_mentions[d] for d in tournament_dates]
     nodes = [num_of_nodes[d] for d in tournament_dates]
-    plt.figure(figsize=figsize)
+    fig = plt.figure(figsize=figsize)
     plt.gcf().subplots_adjust(bottom=0.2)
     plt.plot(x,edges, "-", linewidth=5.0,label="Number of edges (mentions)", c="#21456e")
     plt.plot(x,nodes, "--",linewidth=5.0,label="Number of nodes (accounts)", c="#e84d3d")
     plt.xticks(x, x_ticks, rotation=90)
     plt.yticks(y_ticks,y_ticks)
     plt.legend()
+    return fig
     
 def get_num_nodes(df,date):
     partial_df = df[df["date"] == date]

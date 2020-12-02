@@ -160,12 +160,14 @@ class TennisDataHandler():
     
     def visualize(self, kind="graph", figsize=(12,8)):
         """Visualize the data. Choose from 'graph' and 'players' options for the 'kind' argument."""
+        fig = None
         if kind == "graph":
-            visu_graph(self, figsize)
+            fig = visu_graph(self, figsize)
         elif kind == "players":
-            visu_players(self, figsize)
+            fig = visu_players(self, figsize)
         else:
-            raise RuntimeError("Choose 'kind' parameter from 'players' or 'graph'!")       
+            raise RuntimeError("Choose 'kind' parameter from 'players' or 'graph'!")
+        return fig
     
     def get_daily_players(self, date_id):
         """Get daily tennis players"""

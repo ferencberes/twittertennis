@@ -84,21 +84,6 @@ def test_multi_labels():
     assert 1.0 in unique_labels
     assert 2.0 in unique_labels
     
-def test_label_export():
-    dir1 = os.path.join(fdir, "rg17_with_qTrue")
-    dir2 = dir1 + "_relevant"
-    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
-    handler.export_relevance_labels(dir1, binary=True, only_pos_label=False)
-    handler.export_relevance_labels(dir2, binary=True, only_pos_label=True)
-    assert len(os.listdir(dir1)) == 20
-    assert len(os.listdir(dir2)) == 20
-    fp1 = os.path.join(dir1, "labels_18.csv")
-    fp2 = os.path.join(dir2, "labels_18.csv")
-    df1 = pd.read_csv(fp1, header=None)
-    df2 = pd.read_csv(fp2, header=None)
-    assert len(df1) == 78094
-    assert len(df2) == 18
-    
 def test_get_data_1():
     handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
     data = handler.get_data(edge_type="temporal", binary_label=True, include_no_game_days=True)
