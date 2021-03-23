@@ -9,13 +9,9 @@ Utility python package for RG17 and UO17 Twitter tennis tournament data sets.
 
 # Introduction
 
-This repository is a utility Python package for RG17 (Roland-Garros 2017) and UO17 (USOpen 2017) Twitter tennis tournament data sets.
-
-I used these data sets for several research on dynamic networks observing the underlying Twitter mention graph. A huge advantage of our data is that **the nodes (Twitter accounts) of the network is temporally labeled** thus we could compare online graph algortihms in **supervised evaluation** tasks.
+This repository is a Python package that ease the interaction with our tennis tournament Twitter data sets RG17 (Roland-Garros 2017) and UO17 (USOpen 2017). In our research, we used the underlying Twitter mention graphs to analyse the performance of mulitple dynamic centrality measures and temporal node embedding methods. A huge advantage of our data is that **the nodes (Twitter accounts) of the network are temporally labeled** thus we could compare online graph algortihms in **supervised evaluation** tasks. The labels encode whether a given node in the Twitter mention network is related to a tennis player who participates in a tournament on the given day.
 
 # How to deploy?
-
-*If you use this Python package please cite one of our previous work from the references section.*
 
 ## Requirements
 
@@ -27,11 +23,11 @@ This package was developed in Python 3.5 conda environment.
 pip install .
 ```
 
-# Quick start
+# Examples
 
-## Example
+## Quick start
 
-In this short example the RG17 (Roland-Garros 2017) data set is processed by the *TennisDataHandler* object. **The data is automatically downloaded to '../data/' folder during the first execution!** After (downloading and) processing the data the daily node relevance labels are exported into YOUR_OUTPUT_DIR folder. 
+In this short example the RG17 (Roland-Garros 2017) data set is processed by the *TennisDataHandler* object. **The data is automatically downloaded to the '../data/' folder during the first execution!** After (downloading and) processing the data, daily node relevance labels are exported and prepared for further analysis. 
 
 ```python
 import twittertennis.handler as tt
@@ -45,13 +41,15 @@ OR change the last line of the code if you only want to export relevant nodes fo
 handler.export_relevance_labels(YOUR_OUTPUT_DIR, binary=True, only_pos_label=True)
 ```
 
-## Details
+See more examples and information about the data in this [notebook](./examples/FirstLook.ipynb).
 
-See more detailed examples and some description about the data in this [notebook](./examples/FirstLook.ipynb)
+## Tests
+
+```
+python setup.py test
+```
 
 # References
-
-We used RG17 and UO17 Twitter tennis data sets in some of our previous work. You can find the BibTex reference format of our papers below:
 
 ```
 @article{Beres2018,

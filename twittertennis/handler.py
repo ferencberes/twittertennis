@@ -1,5 +1,7 @@
 import pandas as pd
+import numpy as np
 import json, pytz, os
+from collections import Counter
 from .tennis_utils import *
 
 TIMEZONE = {
@@ -38,6 +40,15 @@ def group_edges(df, key_col="date"):
     for key, group in grouped:
         edges_grouped[key] = group
     return edges_grouped
+
+def reindex_labels(label_dict, id2account, account2index):
+    tuples = []
+    for key, label in label_dict.items():
+        new_id = account2index[id2account[key]]
+        tuples.append((new_id, label))
+    new_dict = dict(tuples)
+    ordered_dict = dict(sorted(new_dict.items()))
+    return ordered_dict
 
 class TennisDataHandler():
     
@@ -115,7 +126,10 @@ class TennisDataHandler():
         sources = list(zip(mentions["src_screen_str"], mentions["src"]))
         self.account_to_id = dict(sources+targets)
         #print(len(self.account_to_id))
-        self.id_to_account = dict(zip(self.account_to_id.values(), self.account_to_id.keys()))
+        #self.id_to_account = dict(zip(self.account_to_id.values(), self.account_to_id.keys()))
+        rev_targets = list(zip(mentions["trg"],mentions["trg_screen_str"]))
+        rev_sources = list(zip(mentions["src"],mentions["src_screen_str"]))
+        self.id_to_account = dict(rev_sources+rev_targets)
         nodes = list(self.account_to_id.values())
         # tennis account to player
         tennis_account_to_player = {}
@@ -227,41 +241,61 @@ class TennisDataHandler():
         with open("%s/summary.json" % output_dir, 'w') as f:
             json.dump(self.summary(), f, indent="   ", sort_keys=False)
         self.mentions[["epoch","src","trg"]].to_csv("%s/edges.csv" % output_dir, index=False, header=False, sep=sep)
+        
+    def _reindex_edges(self, df, account_to_index=None):
+        if account_to_index != None:
+            src = df["src"].apply(lambda x: account_to_index.get(self.id_to_account.get(x)))
+            trg = df["trg"].apply(lambda x: account_to_index.get(self.id_to_account.get(x)))
+        else:
+            src = df["src"]
+            trg = df["trg"]
+        return src, trg
     
-    def _get_snapshot_edges(self, snapshot_id, edge_type="temporal"):
+    def _get_snapshot_edges(self, snapshot_id, edge_type="temporal", account_to_index=None):
         snap_edges = []
         if edge_type == "temporal":
             df = self.mentions[self.mentions["date"]==snapshot_id][["src","trg","epoch"]].sort_values("epoch")
-            snap_edges = list(zip(df["src"], df["trg"], df["epoch"]))
+            src, trg = self._reindex_edges(df, account_to_index)
+            weights = list(df["epoch"])
         else:
             df = self.weighted_edges_grouped[snapshot_id]
+            src, trg = self._reindex_edges(df, account_to_index)
             if edge_type == "weighted":
-                
-                snap_edges = list(zip(df["src"], df["trg"], df["weight"]))
+                weights = list(df["weight"])
             else:
-                snap_edges = list(zip(df["src"], df["trg"]))
-        return snap_edges
+                weights = list(np.ones(len(df)))
+        snap_edges = list(zip(src, trg))
+        return snap_edges, weights
     
+    def get_account_recoder(self):
+        mention_activity = list(self.mentions["src_screen_str"]) + list(self.mentions["trg_screen_str"])
+        cnt = Counter(mention_activity)
+        accounts, counts = zip(*cnt.most_common())
+        node_mapping = dict(zip(accounts,range(len(accounts))))
+        return node_mapping
+
     def get_data(self, edge_type="temporal", binary_label=True, include_no_game_days=True):
+        account_to_index = self.get_account_recoder()
         labels = self.get_daily_relevance_labels(binary=binary_label)
         data = {}
         idx = 0
-        for date in self.dates:
+        for idx, date in enumerate(self.dates):
             if not include_no_game_days and date in self.dates_with_no_games:
                 continue
             else:
-                data[date] = {
+                y = reindex_labels(labels[date], self.id_to_account, account_to_index)
+                node_keys = list(y.keys())
+                X = dict(zip(node_keys, node_keys))
+                edges, weights = self._get_snapshot_edges(date, edge_type, account_to_index)
+                data[str(idx)] = {
                     "index":idx,
                     "date":date,
-                    "edges": self._get_snapshot_edges(date, edge_type=edge_type),
-                    "y": labels[date],
-                    "X": None
+                    "edges": edges,
+                    "weights": weights,
+                    "y": y,
+                    "X": X
                 }
                 idx += 1
         data["time_periods"] = len(data)
-        data["node_ids"] = self.account_to_id
-        data["snapshots"] = self.dates
+        data["node_ids"] = account_to_index
         return data
-            
-        
-        
