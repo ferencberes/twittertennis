@@ -84,17 +84,24 @@ def test_multi_labels():
     assert 1.0 in unique_labels
     assert 2.0 in unique_labels
     
-def test_get_data_1():
+def test_get_data_rg17():
     handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
-    data = handler.get_data(edge_type="temporal", binary_label=True, include_no_game_days=True)
-    assert len(data) == 22
-    assert max(data['2017-05-24']["y"].values()) == 1
-    assert '2017-05-27' in data
-    assert max(data['2017-05-27']["y"].values()) == 0
-
-def test_get_data_2():
-    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
-    data = handler.get_data(edge_type="temporal", binary_label=False, include_no_game_days=False)
+    data = handler.get_data(edge_type="temporal", binary_label=True)
     assert len(data) == 21
-    assert max(data['2017-05-24']["y"].values()) == 2
-    assert (not '2017-05-27' in data)
+    assert max(data["0"]["y"]) == 1
+    assert max(data["1"]["y"]) == 1
+    assert max(data["2"]["y"]) == 1
+    assert max(data["3"]["y"]) == 0
+    assert max(data["4"]["y"]) == 1
+    
+def test_get_data_uo17():
+    handler = TennisDataHandler(data_dir, "uo17", include_qualifiers=True)
+    data = handler.get_data(edge_type="temporal", binary_label=True)
+    assert len(data) == 22
+    assert max(data["0"]["y"]) == 1
+    assert max(data["1"]["y"]) == 1
+    assert max(data["2"]["y"]) == 1
+    assert max(data["3"]["y"]) == 1
+    assert max(data["4"]["y"]) == 0
+    assert max(data["5"]["y"]) == 0
+    assert max(data["6"]["y"]) == 1

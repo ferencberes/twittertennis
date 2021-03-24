@@ -274,28 +274,36 @@ class TennisDataHandler():
         node_mapping = dict(zip(accounts,range(len(accounts))))
         return node_mapping
 
-    def get_data(self, edge_type="temporal", binary_label=True, include_no_game_days=True):
+    def get_data(self, edge_type="temporal", binary_label=True, max_snapshot_idx=None):
         account_to_index = self.get_account_recoder()
         labels = self.get_daily_relevance_labels(binary=binary_label)
         data = {}
         idx = 0
-        for idx, date in enumerate(self.dates):
-            if not include_no_game_days and date in self.dates_with_no_games:
-                continue
-            else:
-                y = reindex_labels(labels[date], self.id_to_account, account_to_index)
-                node_keys = list(y.keys())
-                X = dict(zip(node_keys, node_keys))
-                edges, weights = self._get_snapshot_edges(date, edge_type, account_to_index)
-                data[str(idx)] = {
-                    "index":idx,
-                    "date":date,
-                    "edges": edges,
-                    "weights": weights,
-                    "y": y,
-                    "X": X
-                }
-                idx += 1
+        dates = self.dates
+        if max_snapshot_idx != None:
+            dates = dates[:max_snapshot_idx]
+        for idx, date in enumerate(dates):
+            y = reindex_labels(labels[date], self.id_to_account, account_to_index)
+            node_keys = list(y.keys())
+            X = dict(zip(node_keys, node_keys))
+            edges, weights = self._get_snapshot_edges(date, edge_type, account_to_index)
+            data[str(idx)] = {
+                "index":idx,
+                "date":date,
+                "edges": edges,
+                "weights": weights,
+                "y": list([y[node] for node in range(len(account_to_index))]),
+                "X": list([X[node] for node in range(len(account_to_index))]),
+            }
+            if self.include_qualifiers:
+                data[str(idx)]["game_day"] = not date in self.dates_with_no_games            
+            idx += 1
         data["time_periods"] = len(data)
         data["node_ids"] = account_to_index
         return data
+    
+    def to_json(self, path, edge_type="temporal", binary_label=True, max_snapshot_idx=None):
+        data = self.get_data(edge_type, binary_label, max_snapshot_idx)
+        with open(path, 'w') as f:
+            json.dump(data, f)
+        
