@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, json
 import pandas as pd
 
 delim = os.path.sep
@@ -7,6 +7,11 @@ fdir = delim.join(fp.split(delim)[:-1])
 data_dir = os.path.join(fdir, "..", "data")
 
 from twittertennis.handler import TennisDataHandler
+
+def load_json(json_fp):
+    with open(json_fp) as f:
+        data = json.load(f)
+    return data
 
 def test_label_export():
     dir1 = os.path.join(fdir, "rg17_with_qTrue")
@@ -22,3 +27,17 @@ def test_label_export():
     df2 = pd.read_csv(fp2, header=None)
     assert len(df1) == 78094
     assert len(df2) == 18
+    
+def test_json_export():
+    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
+    json_fp = "rg17_temporal.json"
+    handler.to_json(json_fp, "temporal")
+    data = load_json(json_fp)
+    assert len(data) == 21
+    
+def test_json_export_max_id():
+    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
+    json_fp = "rg17_temporal.json"
+    handler.to_json(json_fp, "temporal", max_snapshot_idx=3)
+    data = load_json(json_fp)
+    assert len(data) == 5

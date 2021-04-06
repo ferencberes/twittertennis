@@ -1,8 +1,11 @@
 import pandas as pd
 import numpy as np
+import networkx as nx
 import json, pytz, os
 from collections import Counter
+from tqdm import tqdm
 from .tennis_utils import *
+from .handler_utils import *
 
 TIMEZONE = {
     "rg17": pytz.timezone('Europe/Paris'),
@@ -34,22 +37,6 @@ DATES_WITH_NO_GAMES = {
     "uo17": ["2017-08-26","2017-08-27"]
 }
 
-def group_edges(df, key_col="date"):
-    edges_grouped = {}
-    grouped = df.groupby(key_col)
-    for key, group in grouped:
-        edges_grouped[key] = group
-    return edges_grouped
-
-def reindex_labels(label_dict, id2account, account2index):
-    tuples = []
-    for key, label in label_dict.items():
-        new_id = account2index[id2account[key]]
-        tuples.append((new_id, label))
-    new_dict = dict(tuples)
-    ordered_dict = dict(sorted(new_dict.items()))
-    return ordered_dict
-
 class TennisDataHandler():
     
     def __init__(self, data_dir, data_id, include_qualifiers=True, verbose=False):
@@ -66,7 +53,8 @@ class TennisDataHandler():
         self._load_files(self.data_id, self.data_dir)
         self._filter_data()
         self._extract_mappings()
-        self._prepare_edges()
+        self.weighted_edges, self.weighted_edges_grouped, self.edges_grouped = prepare_edges(self.mentions, "date")
+        #self._prepare_edges()
         self.daily_p_dict, self.daily_p_df = extract_daily_players(self.schedule, self.player_accounts)
         
     def _load_files(self, data_id, data_dir):
@@ -74,7 +62,7 @@ class TennisDataHandler():
         tennis_match_file_path = "%s/%s_schedule.csv" % (data_dir, data_id)
         player_assigments_path = "%s/%s_player_accounts.json" % (data_dir, data_id)
         mentions = pd.read_csv(mention_file_path, sep="|")
-        mentions = mentions[["epoch","src","trg","src_screen_str", "trg_screen_str"]]
+        mentions = mentions[["epoch","src","trg","src_screen_str", "trg_screen_str"]].sort_values("epoch")
         self.mentions = mentions
         if self.verbose:
             print("\n### Load Twitter mentions ###")
@@ -150,14 +138,6 @@ class TennisDataHandler():
             for a_name in account_names:
                 tennis_account_to_player[a_name] = cleaned_p
         self.tennis_account_to_player = tennis_account_to_player
-        
-    def _prepare_edges(self):
-        group_cols = ["src","trg","date"]
-        weighted_edges = self.mentions.groupby(by=group_cols)["epoch"].count().reset_index()
-        weighted_edges.rename({"epoch":"weight"}, axis=1, inplace=True)
-        self.weighted_edges = weighted_edges
-        self.edges_grouped = group_edges(self.mentions[group_cols], key_col="date")
-        self.weighted_edges_grouped = group_edges(self.weighted_edges, key_col="date")
     
     def summary(self):
         """Show the data summary"""
@@ -242,68 +222,66 @@ class TennisDataHandler():
             json.dump(self.summary(), f, indent="   ", sort_keys=False)
         self.mentions[["epoch","src","trg"]].to_csv("%s/edges.csv" % output_dir, index=False, header=False, sep=sep)
         
-    def _reindex_edges(self, df, account_to_index=None):
-        if account_to_index != None:
-            src = df["src"].apply(lambda x: account_to_index.get(self.id_to_account.get(x)))
-            trg = df["trg"].apply(lambda x: account_to_index.get(self.id_to_account.get(x)))
-        else:
-            src = df["src"]
-            trg = df["trg"]
-        return src, trg
-    
-    def _get_snapshot_edges(self, snapshot_id, edge_type="temporal", account_to_index=None):
+    def _get_snapshot_edges(self, snapshot_id, grouped_data, edge_type="temporal", account_to_index=None):
+        edges_grouped, weighted_edges_grouped = grouped_data
         snap_edges = []
         if edge_type == "temporal":
-            df = self.mentions[self.mentions["date"]==snapshot_id][["src","trg","epoch"]].sort_values("epoch")
-            src, trg = self._reindex_edges(df, account_to_index)
-            weights = list(df["epoch"])
+            df = edges_grouped[snapshot_id]
+            src, trg = reindex_edges(df, self.id_to_account, account_to_index)
+            weights = list(np.ones(len(df)))
         else:
-            df = self.weighted_edges_grouped[snapshot_id]
-            src, trg = self._reindex_edges(df, account_to_index)
+            df = weighted_edges_grouped[snapshot_id]
+            src, trg = reindex_edges(df, self.id_to_account, account_to_index)
             if edge_type == "weighted":
                 weights = list(df["weight"])
             else:
                 weights = list(np.ones(len(df)))
         snap_edges = list(zip(src, trg))
-        return snap_edges, weights
-    
-    def get_account_recoder(self):
-        mention_activity = list(self.mentions["src_screen_str"]) + list(self.mentions["trg_screen_str"])
-        cnt = Counter(mention_activity)
-        accounts, counts = zip(*cnt.most_common())
-        node_mapping = dict(zip(accounts,range(len(accounts))))
-        return node_mapping
+        weights = weights[:len(snap_edges)]
+        G = nx.Graph()
+        G.add_edges_from(snap_edges)
+        if account_to_index == None:
+            X = calculate_node_features(G, None)
+        else:
+            X = calculate_node_features(G, len(account_to_index))
+        return snap_edges, weights, X
 
-    def get_data(self, edge_type="temporal", binary_label=True, max_snapshot_idx=None):
-        account_to_index = self.get_account_recoder()
-        labels = self.get_daily_relevance_labels(binary=binary_label)
+    def get_data(self, edge_type="temporal", binary_label=True, max_snapshot_idx=None, top_k_nodes=None):
+        snapshots = self.dates
+        labels = self.get_daily_relevance_labels(binary=binary_label) 
+        grouped_data = (self.edges_grouped, self.weighted_edges_grouped)
+        return self._prepare_json_data(snapshots, self.mentions, grouped_data, labels, edge_type, max_snapshot_idx, top_k_nodes)
+        
+    def _prepare_json_data(self, snapshots, mentions, grouped_data, labels, edge_type, max_snapshot_idx, top_k_nodes):
+        account_to_index = get_account_recoder(mentions, k=top_k_nodes)
         data = {}
         idx = 0
-        dates = self.dates
         if max_snapshot_idx != None:
             dates = dates[:max_snapshot_idx]
-        for idx, date in enumerate(dates):
-            y = reindex_labels(labels[date], self.id_to_account, account_to_index)
-            node_keys = list(y.keys())
-            X = dict(zip(node_keys, node_keys))
-            edges, weights = self._get_snapshot_edges(date, edge_type, account_to_index)
+        for idx, snapshot_id in tqdm(enumerate(snapshots)):
+            edges, weights, X = self._get_snapshot_edges(snapshot_id, grouped_data, edge_type, account_to_index)
+            X = list([X[node] for node in range(len(account_to_index))])
+            X = X[:len(account_to_index)]
+            y = reindex_labels(labels[snapshot_id], self.id_to_account, account_to_index)
+            y = list([y[node] for node in range(len(account_to_index))])
+            y = y[:len(account_to_index)]
             data[str(idx)] = {
                 "index":idx,
-                "date":date,
+                #"date":date,
                 "edges": edges,
                 "weights": weights,
-                "y": list([y[node] for node in range(len(account_to_index))]),
-                "X": list([X[node] for node in range(len(account_to_index))]),
+                "y": y,
+                "X": X,
             }
-            if self.include_qualifiers:
-                data[str(idx)]["game_day"] = not date in self.dates_with_no_games            
+            #if self.include_qualifiers:
+            #    data[str(idx)]["game_day"] = not date in self.dates_with_no_games       
             idx += 1
         data["time_periods"] = len(data)
         data["node_ids"] = account_to_index
         return data
     
-    def to_json(self, path, edge_type="temporal", binary_label=True, max_snapshot_idx=None):
-        data = self.get_data(edge_type, binary_label, max_snapshot_idx)
+    def to_json(self, path, edge_type="temporal", binary_label=True, max_snapshot_idx=None, top_k_nodes=None):
+        data = self.get_data(edge_type, binary_label, max_snapshot_idx, top_k_nodes)
         with open(path, 'w') as f:
             json.dump(data, f)
         

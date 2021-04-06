@@ -1,4 +1,4 @@
-﻿twittertennis
+twittertennis
 ==============
 
 [![Build Status](https://travis-ci.org/ferencberes/twittertennis.svg?branch=master)](https://travis-ci.org/ferencberes/twittertennis)

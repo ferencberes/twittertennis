@@ -1,15 +1,13 @@
-import os, sys
-import pandas as pd
+from twittertennis.handler import TennisDataHandler
+import os
 
 delim = os.path.sep
 fp = os.path.realpath(__file__)
 fdir = delim.join(fp.split(delim)[:-1])
 data_dir = os.path.join(fdir, "..", "data")
 
-from twittertennis.handler import TennisDataHandler
-
 def test_dimensions():
-    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True, verbose=True)
+    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
     num_days = len(handler.dates)
     assert handler.weighted_edges.shape[1] == 4
     assert len(handler.weighted_edges_grouped) == num_days
@@ -83,25 +81,3 @@ def test_multi_labels():
     assert 0.0 in unique_labels
     assert 1.0 in unique_labels
     assert 2.0 in unique_labels
-    
-def test_get_data_rg17():
-    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
-    data = handler.get_data(edge_type="temporal", binary_label=True)
-    assert len(data) == 21
-    assert max(data["0"]["y"]) == 1
-    assert max(data["1"]["y"]) == 1
-    assert max(data["2"]["y"]) == 1
-    assert max(data["3"]["y"]) == 0
-    assert max(data["4"]["y"]) == 1
-    
-def test_get_data_uo17():
-    handler = TennisDataHandler(data_dir, "uo17", include_qualifiers=True)
-    data = handler.get_data(edge_type="temporal", binary_label=True)
-    assert len(data) == 22
-    assert max(data["0"]["y"]) == 1
-    assert max(data["1"]["y"]) == 1
-    assert max(data["2"]["y"]) == 1
-    assert max(data["3"]["y"]) == 1
-    assert max(data["4"]["y"]) == 0
-    assert max(data["5"]["y"]) == 0
-    assert max(data["6"]["y"]) == 1

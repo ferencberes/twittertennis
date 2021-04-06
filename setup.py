@@ -5,7 +5,9 @@ install_requires = [
     'datetime',
     'pytz',
     'matplotlib',
-    'seaborn'
+    'seaborn',
+    'networkx',
+    'karateclub',
 ]
 
 setup_requires = ['pytest-runner']
