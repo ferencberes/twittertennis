@@ -222,6 +222,21 @@ class TennisDataHandler():
             json.dump(self.summary(), f, indent="   ", sort_keys=False)
         self.mentions[["epoch","src","trg"]].to_csv("%s/edges.csv" % output_dir, index=False, header=False, sep=sep)
         
+    def get_account_recoder(self, k=None, src_col="src_screen_str", trg_col="trg_screen_str", exclude_final_day=True):
+        mentions = self.mentions.copy()
+        enabled_dates = self.dates.copy()
+        if exclude_final_day:
+            enabled_dates = enabled_dates[:-1]
+        mentions = mentions[mentions["date"].isin(enabled_dates)]
+        mention_activity = list(mentions[src_col]) + list(mentions[trg_col])
+        cnt = Counter(mention_activity)
+        if k == None:
+            accounts, counts = zip(*cnt.most_common())
+        else:
+            accounts, counts = zip(*cnt.most_common(k))
+        node_mapping = dict(zip(accounts,range(len(accounts))))
+        return node_mapping
+    
     def _get_snapshot_edges(self, snapshot_id, grouped_data, edge_type="temporal", account_to_index=None):
         edges_grouped, weighted_edges_grouped = grouped_data
         snap_edges = []
@@ -245,16 +260,36 @@ class TennisDataHandler():
         else:
             X = calculate_node_features(G, len(account_to_index))
         return snap_edges, weights, X
+    
+    def extract_snapshots(self, delta_t):
+        start_epoch = self.start_time
+        days = len(self.dates)
+        to_epoch = start_epoch+days*86400+delta_t
+        splits=list(range(start_epoch,to_epoch,delta_t))
+        mentions = self.mentions.copy()
+        mentions = mentions[mentions["date"].isin(self.dates)]
+        epochs = np.array(mentions["epoch"])
+        snapshots_ids = pd.cut(epochs, splits, right=False, labels=range(len(splits)-1))
+        mentions["snapshot_id"] = snapshots_ids
+        return mentions
 
-    def get_data(self, edge_type="temporal", binary_label=True, max_snapshot_idx=None, top_k_nodes=None):
+    def get_data(self, binary_label=True, edge_type="weighted",  max_snapshot_idx=None, top_k_nodes=None):
         snapshots = self.dates
-        labels = self.get_daily_relevance_labels(binary=binary_label) 
+        labels = self.get_daily_relevance_labels(binary=binary_label)
         grouped_data = (self.edges_grouped, self.weighted_edges_grouped)
         return self._prepare_json_data(snapshots, self.mentions, grouped_data, labels, edge_type, max_snapshot_idx, top_k_nodes)
+    
+    def get_regression_data(self, delta_t=3*3600, edge_type="weighted", max_snapshot_idx=None, top_k_nodes=None):
+        mentions = self.extract_snapshots(delta_t)
+        snapshots = sorted(list(mentions["snapshot_id"].unique()))
+        labels = regression_labels(mentions, "snapshot_id")
+        weighted_edges, weighted_edges_grouped, edges_grouped = prepare_edges(mentions, "snapshot_id")
+        grouped_data = (edges_grouped, weighted_edges_grouped)
+        return self._prepare_json_data(snapshots, mentions, grouped_data, labels, edge_type, max_snapshot_idx, top_k_nodes)
         
     def _prepare_json_data(self, snapshots, mentions, grouped_data, labels, edge_type, max_snapshot_idx, top_k_nodes):
         snaps = snapshots.copy()
-        account_to_index = get_account_recoder(mentions, k=top_k_nodes)
+        account_to_index = self.get_account_recoder(k=top_k_nodes)
         data = {}
         idx = 0
         if max_snapshot_idx != None:
@@ -264,7 +299,7 @@ class TennisDataHandler():
             X = list([X[node] for node in range(len(account_to_index))])
             X = X[:len(account_to_index)]
             y = reindex_labels(labels[snapshot_id], self.id_to_account, account_to_index)
-            y = list([y[node] for node in range(len(account_to_index))])
+            y = list([y.get(node,0) for node in range(len(account_to_index))])
             y = y[:len(account_to_index)]
             data[str(idx)] = {
                 "index":idx,
@@ -281,8 +316,14 @@ class TennisDataHandler():
         data["node_ids"] = account_to_index
         return data
     
-    def to_json(self, path, edge_type="temporal", binary_label=True, max_snapshot_idx=None, top_k_nodes=None):
-        data = self.get_data(edge_type, binary_label, max_snapshot_idx, top_k_nodes)
+    def to_json(self, path, task="classification", delta_t=3*3600, edge_type="weighted", max_snapshot_idx=None, top_k_nodes=None):
+        if task == "classification":
+            print("Preparing classification data...")
+            data = self.get_data(True, edge_type,  max_snapshot_idx, top_k_nodes)
+        else:
+            print("Preparing regression data...")
+            data = self.get_regression_data(delta_t, edge_type,  max_snapshot_idx, top_k_nodes)
         with open(path, 'w') as f:
             json.dump(data, f)
+        print("done")
         

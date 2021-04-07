@@ -1,18 +1,27 @@
+import pandas as pd
 import networkx as nx
 from collections import Counter
 
 ### EDGES ###
 
+def groupby_count(df, group_cols, count_col):
+    parts = [df[col] for col in group_cols]
+    tuples = list(zip(*parts))
+    cnt = Counter(tuples)
+    keys, counts = zip(*list(cnt.items()))
+    res = pd.DataFrame(keys, columns=group_cols)
+    res[count_col] = counts
+    return res
+
 def group_edges(df, key_col="date"):
     edges_grouped = {}
-    grouped = df.groupby(key_col)
-    for key, group in grouped:
-        edges_grouped[key] = group
+    keys = sorted(list(df[key_col].unique()))
+    for key in keys:
+        edges_grouped[key] = df[df[key_col]==key].copy()
     return edges_grouped
 
 def get_weighted_edges(df, group_cols):
-    weighted_edges = df.groupby(by=group_cols)["epoch"].count().reset_index()
-    weighted_edges.rename({"epoch":"weight"}, axis=1, inplace=True)
+    weighted_edges = groupby_count(df, group_cols, "weight")
     return weighted_edges
 
 def prepare_edges(mentions, snapshot_col="date"):
@@ -23,16 +32,6 @@ def prepare_edges(mentions, snapshot_col="date"):
     return weighted_edges, weighted_edges_grouped, edges_grouped
 
 ### NODE REINDEXING ###
-
-def get_account_recoder(mentions, k=None, src_col="src_screen_str", trg_col="trg_screen_str"):
-    mention_activity = list(mentions[src_col]) + list(mentions[trg_col])
-    cnt = Counter(mention_activity)
-    if k == None:
-        accounts, counts = zip(*cnt.most_common())
-    else:
-        accounts, counts = zip(*cnt.most_common(k))
-    node_mapping = dict(zip(accounts,range(len(accounts))))
-    return node_mapping
 
 def reindex_labels(label_dict, id2account, account2index):
     tuples = []
@@ -59,6 +58,18 @@ def reindex_edges(df, id_to_account, account_to_index=None, src_col="src_screen_
         src = df["src"]
         trg = df["trg"]
     return src, trg
+
+### LABELS ###
+
+def regression_labels(df, snapshot_col):
+    label_records = groupby_count(df, [snapshot_col,"trg"], "count")
+    snapshots = sorted(list(label_records[snapshot_col].unique()))
+    labels = {}
+    for snapshot_id in snapshots:
+        rec_tmp = label_records[label_records[snapshot_col]==snapshot_id]
+        dict_tmp = dict(zip(rec_tmp["trg"],rec_tmp["count"]))
+        labels[snapshot_id] = dict_tmp
+    return labels
 
 ### FEATURES ###
 

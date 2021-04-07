@@ -31,13 +31,13 @@ def test_label_export():
 def test_json_export():
     handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
     json_fp = "rg17_temporal.json"
-    handler.to_json(json_fp, "temporal")
+    handler.to_json(json_fp, task="classification", edge_type="temporal")
     data = load_json(json_fp)
     assert len(data) == 21
     
 def test_json_export_max_id():
     handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=True)
     json_fp = "rg17_temporal.json"
-    handler.to_json(json_fp, "temporal", max_snapshot_idx=3)
+    handler.to_json(json_fp, task="classification", edge_type="temporal", max_snapshot_idx=3)
     data = load_json(json_fp)
     assert len(data) == 5
