@@ -253,12 +253,13 @@ class TennisDataHandler():
         return self._prepare_json_data(snapshots, self.mentions, grouped_data, labels, edge_type, max_snapshot_idx, top_k_nodes)
         
     def _prepare_json_data(self, snapshots, mentions, grouped_data, labels, edge_type, max_snapshot_idx, top_k_nodes):
+        snaps = snapshots.copy()
         account_to_index = get_account_recoder(mentions, k=top_k_nodes)
         data = {}
         idx = 0
         if max_snapshot_idx != None:
-            dates = dates[:max_snapshot_idx]
-        for idx, snapshot_id in tqdm(enumerate(snapshots)):
+            snaps = snaps[:max_snapshot_idx]
+        for idx, snapshot_id in tqdm(enumerate(snaps)):
             edges, weights, X = self._get_snapshot_edges(snapshot_id, grouped_data, edge_type, account_to_index)
             X = list([X[node] for node in range(len(account_to_index))])
             X = X[:len(account_to_index)]
@@ -274,7 +275,7 @@ class TennisDataHandler():
                 "X": X,
             }
             #if self.include_qualifiers:
-            #    data[str(idx)]["game_day"] = not date in self.dates_with_no_games       
+            #    data[str(idx)]["game_day"] = not date in self.dates_with_no_games 
             idx += 1
         data["time_periods"] = len(data)
         data["node_ids"] = account_to_index
