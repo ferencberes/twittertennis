@@ -17,12 +17,14 @@ This repository is a Python package that ease the interaction with two Twitter d
 ## Install
 
 ```bash
-python setup.py install
+pip install twittertennis
 ```
 
 ## Tests
 
 ```
+git clone https://github.com/ferencberes/twittertennis.git
+cd twittertennis
 python setup.py test
 ```
 
