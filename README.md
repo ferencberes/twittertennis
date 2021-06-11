@@ -48,6 +48,8 @@ See more examples and information about the data in this [notebook](./examples/F
 
 # Related research
 
+**1. Temporal walk based centrality metric for graph streams:** [paper](https://appliednetsci.springeropen.com/articles/10.1007/s41109-018-0080-5) [code](https://github.com/ferencberes/online-centrality)
+
 ```
 @article{Beres2018,
 author="B{\'e}res, Ferenc
@@ -64,6 +66,7 @@ issn="2364-8228",
 }
 ```
 
+**2. Node embeddings in dynamic graphs:** [paper](https://appliednetsci.springeropen.com/articles/10.1007/s41109-019-0169-5) [code](https://github.com/ferencberes/online-node2vec)
 ```
 @Article{Béres2019,
 author="B{\'e}res, Ferenc
@@ -79,6 +82,7 @@ pages="25",
 }
 ```
 
+**3. PyTorch Geometric Temporal: Spatiotemporal Signal Processing with Neural Machine Learning Models:** [paper](https://arxiv.org/abs/2104.07788) [code](https://github.com/benedekrozemberczki/pytorch_geometric_temporal)
 ```
 @article{RozemberczkiPGT2021,
   author    = {Benedek Rozemberczki and
