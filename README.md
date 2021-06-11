@@ -1,8 +1,9 @@
 twittertennis
 ==============
 
-[![Build Status](https://travis-ci.org/ferencberes/twittertennis.svg?branch=master)](https://travis-ci.org/ferencberes/twittertennis)
+![build](https://github.com/ferencberes/twittertennis/actions/workflows/main.yml/badge.svg)
 [![codecov](https://codecov.io/gh/ferencberes/twittertennis/branch/master/graph/badge.svg?token=O3SJ5GEHFV)](https://codecov.io/gh/ferencberes/twittertennis)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/django)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ferencberes/twittertennis/v_0.1.0?filepath=examples%2FFirstLook.ipynb)
 
 Utility python package for RG17 and UO17 Twitter tennis tournament data sets.
@@ -13,14 +14,16 @@ This repository is a Python package that ease the interaction with our tennis to
 
 # How to deploy?
 
-## Requirements
-
-This package was developed in Python 3.5 conda environment.
-
 ## Install
 
 ```bash
-pip install .
+python setup.py install
+```
+
+## Tests
+
+```
+python setup.py test
 ```
 
 # Examples
@@ -42,12 +45,6 @@ handler.export_relevance_labels(YOUR_OUTPUT_DIR, binary=True, only_pos_label=Tru
 ```
 
 See more examples and information about the data in this [notebook](./examples/FirstLook.ipynb).
-
-## Tests
-
-```
-python setup.py test
-```
 
 # References
 

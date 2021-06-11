@@ -1,13 +1,13 @@
 from setuptools import find_packages, setup
 
 install_requires = [
+    'networkx',
     'pandas',
     'datetime',
     'pytz',
     'matplotlib',
     'seaborn',
-    'networkx',
-    'karateclub',
+    'tqdm',
 ]
 
 setup_requires = ['pytest-runner']
