@@ -1,4 +1,4 @@
-import os, sys, json
+import os, sys, json, shutil
 import pandas as pd
 
 delim = os.path.sep
@@ -12,6 +12,18 @@ def load_json(json_fp):
     with open(json_fp) as f:
         data = json.load(f)
     return data
+
+def test_content_check():
+    output_dir = os.path.join(fdir, "content_check")
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
+    handler = TennisDataHandler(data_dir, "rg17", include_qualifiers=False)
+    handler.export_relevance_labels(output_dir, binary=True, only_pos_label=True)
+    handler.export_edges(output_dir)
+    files = os.listdir(output_dir)
+    assert "summary.json" in files
+    assert "edges.csv"
+    assert len(files) == 17
 
 def test_label_export():
     dir1 = os.path.join(fdir, "rg17_with_qTrue")

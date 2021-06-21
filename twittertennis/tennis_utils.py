@@ -104,7 +104,6 @@ def visu_players(handler, figsize=(15,10)):
     plt.xlim((0,220))
     sns.despine(left=True, bottom=True)
     plt.legend(loc='upper right')
-    plt.show()
     return fig
     
 def visu_graph(handler, figsize=(12,8)):

@@ -32,13 +32,25 @@ python setup.py test
 
 ## Quick start
 
-In this short example the RG17 (Roland-Garros 2017) data set is processed by the *TennisDataHandler* object. **The data is automatically downloaded to the '../data/' folder during the first execution!** After (downloading and) processing the data, daily node relevance labels are exported and prepared for further analysis. 
+In this short example the RG17 (Roland-Garros 2017) data set is processed by the *TennisDataHandler* object. **The data is automatically downloaded to the '../data/' folder during the first execution!** After data preparation steps, mention links and daily node relevance labels are exported for further analysis. 
+
+- Initialize data preprocessor
 
 ```python
 import twittertennis.handler as tt
 
 handler = tt.TennisDataHandler("../data/", "rg17", include_qualifiers=True)
 print(handler.summary())
+```
+
+- Export mention links: 
+
+```python
+handler.export_edges(YOUR_OUTPUT_DIR)
+```
+- Export daily node relevance labels:
+
+```python
 handler.export_relevance_labels(YOUR_OUTPUT_DIR, binary=True)
 ```
 OR change the last line of the code if you only want to export relevant nodes for each day:
@@ -48,14 +60,13 @@ handler.export_relevance_labels(YOUR_OUTPUT_DIR, binary=True, only_pos_label=Tru
 
 **Preprocessed file content:**
 
-After data preprocessing you will the the following files in your folder:
+After data preprocessing you will find the following files in your specified folder:
 
 - `edges.csv` : edge stream of Twitter mentions. The timestamp in the first column in followed by the source and target node identifiers.
-- `id2account.csv` : mapping from integer identifiers to Twitter accounts
 - `label_*.csv` : list of relevant node identifiers for each day
 - `summary.json` : parameters set for `TennisDataHandler` during data preparation
 
-See more examples and information about the data in this [notebook](./examples/FirstLook.ipynb).
+See more examples in this [notebook](./examples/FirstLook.ipynb).
 
 # Related research
 
