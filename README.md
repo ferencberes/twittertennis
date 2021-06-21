@@ -46,6 +46,15 @@ OR change the last line of the code if you only want to export relevant nodes fo
 handler.export_relevance_labels(YOUR_OUTPUT_DIR, binary=True, only_pos_label=True)
 ```
 
+**Preprocessed file content:**
+
+After data preprocessing you will the the following files in your folder:
+
+- `edges.csv` : edge stream of Twitter mentions. The timestamp in the first column in followed by the source and target node identifiers.
+- `id2account.csv` : mapping from integer identifiers to Twitter accounts
+- `label_*.csv` : list of relevant node identifiers for each day
+- `summary.json` : parameters set for `TennisDataHandler` during data preparation
+
 See more examples and information about the data in this [notebook](./examples/FirstLook.ipynb).
 
 # Related research
